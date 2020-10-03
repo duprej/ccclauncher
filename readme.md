@@ -128,7 +128,7 @@ sudo cpan -i Config::Simple DBI Proc::Simple String::Util Sys::Hostname Text::CS
 Copy the systemd unit file & enable at startup:
 
 ```console
-sudo ln -s /opt/ccclauncher/ccclauncher.service ccclauncher.service
+sudo ln -s /opt/ccclauncher/ccclauncher.service /etc/systemd/system/ccclauncher.service
 sudo systemctl daemon-reload
 sudo systemctl enable ccclauncher
 ```
