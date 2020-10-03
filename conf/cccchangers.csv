@@ -1,0 +1,4 @@
+id;desc;enabled;serialPort;hostname;tcpPort;password;model;bauds;timeout;leftPlayerID;useTLS
+ac1;Changeur 1 V3000 (Gauche);true;/dev/ttyUSB0;dellpioneer;8000;;v3000;9600;2;1;false
+ac2;Changeur 2 V3000 (Droite);true;/dev/ttyUSB1;dellpioneer;8001;;v3000;9600;2;1;false
+ac3;Changeur 3 V180M;true;/dev/ttyUSB2;dellpioneer;8002;;v180m;4800;12;0;false

@@ -1,0 +1,16 @@
+[Unit]
+Description=CCClauncher (CCCpivot & CCCweb Node.js processes manager)
+Requires=network.target
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+RemainAfterExit=yes
+WorkingDirectory=/opt/ccclauncher/
+ExecStart=/usr/bin/perl /opt/ccclauncher/launcher.pl start
+ExecStop=/usr/bin/perl /opt/ccclauncher/launcher.pl stop
+ExecStatus=/usr/bin/perl /opt/ccclauncher/launcher.pl status
+Restart=no
