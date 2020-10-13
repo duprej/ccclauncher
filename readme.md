@@ -100,7 +100,7 @@ Installation on Linux (in terminal)
 ----------------------------------------------------------------
 All CCC modules are located in /opt directory by default.
 
-Check you have Perl & CPAN :
+Check you have Perl & CPAN:
 
 ```console
 perl -v
@@ -119,7 +119,7 @@ Check :
 sudo ls -R /opt/ccclauncher/
 ```
 
-Install Perl modules :
+Install Perl modules:
 
 ```console
 sudo cpan -i Config::Simple DBI Proc::Simple String::Util Sys::Hostname Text::CSV Switch
