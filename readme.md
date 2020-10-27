@@ -5,7 +5,7 @@ Introduction
 [CCC = CAC Control Center](https://github.com/duprej/ccc). CAC is an accronym for dedicated Pioneer CD Autochangers.
 CCClauncher module is a friendly complement that helps you to use [CCCpivot](https://github.com/duprej/cccpivot) easily.
 
-It's basicaly a single Perl script to launch and manage all CCCpivot Node.js processes. This script reads a classical configuration file and needs a datasource.
+It's basicaly a single Perl5 script to launch and manage all CCCpivot Node.js processes. This script reads a classical configuration file and needs a datasource.
 The datasource can be a CSV file or the CCCweb "autochanger" PostgreSQL table. The datasource describes all changers associated with their hostnames (of a computer).
 
 CCClauncher automaticaly scan the given datasource, filter it with the current hostname and startup all CCCpivot instances associated with this hostname.
@@ -121,10 +121,17 @@ sudo ls -R /opt/ccclauncher/
 
 Install Perl modules:
 
+If you are using a Raspberry Pi or Debian/Ubuntu:
+
+```console
+sudo apt-get install -y libconfig-simple-perl libdbi-perl libproc-simple-perl libswitch-perl libtext-csv-perl
+sudo cpan -iT String::Util
+```
+Or install all via CPAN:
+
 ```console
 sudo cpan -i Config::Simple DBI Proc::Simple String::Util Sys::Hostname Text::CSV Switch
 ```
-
 Copy the systemd unit file & enable at startup:
 
 ```console
