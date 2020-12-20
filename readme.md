@@ -29,38 +29,47 @@ Temporary Files
 Managed process list is stored in a CSV pid file : /var/run/cccpivot.pids.
 ```console
 root@dellpioneer:/opt/cccpivot# cat /var/run/cccpivot.pids
-key;pid
-jb1;2942
-jb2;2943
+key;pid;powerGpio
+jb1;2942;0
+jb2;2943;0
 ```
+Power management
+----------------------------------------------------------------
+This new feature was added in the 1.1.0 version of the this script.
+This version add 3 more fields (columns) in the CSV file : powerGpio, powerOn & powerOff.
+By assignating a pin number (>0) you can make your Raspberry Pi power on and off the changer via a GPIO pin and a relay. This GPIO number is given to the CCCpivot Node.js process. By this way, is it possible to remotely power-on and power-off the changer directly in the application for saving power when not used.
+
 CCClauncher configuration
 ----------------------------------------------------------------
 Once installed, edit the configuration file /etc/ccclauncher.cfg (INI file).
 Then edit the datasource file /etc/cccchangers.csv (CSV file).
-Each row of the CSV file is an autochanger entry :
+Each row of the CSV file is an changer entry :
 
-id;desc;enabled;serialPort;hostname;tcpPort;password;model;bauds;timeout;leftPlayerID
+id;desc;enabled;serialPort;hostname;tcpPort;password;model;bauds;timeout;leftPlayerID;useTLS;powerGpio;powerOn;powerOff
 
 | Entry | description
 --- | ---
-| id | Jukebox ID string (few chars), must be unique ! 
-| desc| Jukebox description (please avoid special chars).
+| id | Changer ID string (few chars), must be unique! 
+| desc| Changer description (please avoid special chars).
 | enabled | true/false (false = autochanger ignored, no instance launched).
 | hostname | Computer hostname string (used to filter between many computers).
 | tcpPort | Port number for websocket listening (8000 and more).
 | password | Password string. Optional, leave it empty for easy operation.
-| model | Jukebox model string ['v180m','v3000','v3200','v5000'].
+| model | Changer model string ['v180m','v3000','v3200','v5000'].
 | bauds | Serial connection speed.  Can be 4800/9600 on V3000/3200/5000 (check front switches). Must be set at 4800 for V180M (fixed on this model).
 | timeout | Serial timeout in seconds, maximum reaction time, advised values : 2 seconds for V3000/3200/5000. 12 seconds for V180M.
 | leftPlayerID | Left player ID number (for V3000/3200/5000 - see manual), put 0 for V180M.
 | useTLS | Enable TLS (use HTTPS certificate).
+| powerGpio | GPIO number on the Raspberry Pi to drive a relay for power on/off the changer. Put 0 if not used.
+| powerOn | Put 1 to auto power on changer when starting instance. Put 0 if not used.
+| powerOff | Put 1 to auto power off changer when stopping instance. Put 0 if not used.
 
 Example :
 
-> id;desc;enabled;serialPort;hostname;tcpPort;password;model;bauds;timeout;leftPlayerID;useTLS
-> ac1;Changeur 1 V3000 (Gauche);true;/dev/ttyUSB1;dellpioneer;8000;;v3000;9600;2;1;true
-> ac2;Changeur 2 V3000 (Droite);true;/dev/ttyUSB2;dellpioneer;8001;;v3000;9600;2;1;true  
-> ac3;Changeur 3 V180M;true;/dev/ttyUSB0;dellpioneer;8002;;v180m;4800;12;0;true
+> id;desc;enabled;serialPort;hostname;tcpPort;password;model;bauds;timeout;leftPlayerID;useTLS;powerGpio;powerOn;powerOff
+> ac1;Changeur 1 V3000 (Gauche);true;/dev/ttyUSB1;dellpioneer;8000;;v3000;9600;2;1;true;0;0;0
+> ac2;Changeur 2 V3000 (Droite);true;/dev/ttyUSB2;dellpioneer;8001;;v3000;9600;2;1;true;0;0;0  
+> ac3;Changeur 3 V180M;true;/dev/ttyUSB0;dellpioneer;8002;;v180m;4800;12;0;true;0;0;0
 
 CCClauncher Perl script usage
 ----------------------------------------------------------------
@@ -168,4 +177,4 @@ ps -ef|grep node
 sudo perl /opt/ccclauncher/launcher.pl status
 ```
 
-Now you are ready to install or use tester, controller and web modules.
+Now you are ready to install or use other modules.

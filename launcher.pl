@@ -4,9 +4,10 @@
 	A simple Perl script to launch & manage Node.js CCCpivot processes.
 	2018-2020 Jonathan DUPRE <http://www.jonathandupre.fr>
 	Licenced under GPLv3
-	1.0 - sept. 23 2020
+	1.0.0 - sept. 23 2020
+	1.1.0 - dec. 20 2020 - Add power management for Raspberry Pi
 =cut
-use constant SCRIPTVERSION => '1.0';
+use constant SCRIPTVERSION => '1.1.0';
 use strict;
 use warnings;
 use v5.10;
@@ -76,7 +77,7 @@ sub loadPgDbDs($) {
 	my $dbHandle = DBI->connect($dsString, trim($cfgObj->param('database.user')), trim($cfgObj->param('database.password')),{ RaiseError => 1, AutoCommit => 0 });
 	if (defined $dbHandle) {
 		$dbHandle->do("SET search_path TO ccc, public");
-		my $stHandle = $dbHandle->prepare("SELECT ac.id,description,tcpPort,serialPort,bauds,timeout,password,type,leftplayerid,hostname,enabled,usetls FROM autochanger ac, autochangermodel acm WHERE ac.model = acm.id ORDER BY ac.id;");
+		my $stHandle = $dbHandle->prepare("SELECT * FROM autochanger ac, autochangermodel acm WHERE ac.model = acm.id ORDER BY ac.id;");
 		my $returnValue = $stHandle->execute();
 		if ($returnValue < 0) {
 			print "ERROR : Problem with the SQL query.\n";
@@ -103,6 +104,9 @@ sub loadPgDbDs($) {
 				$newJB{'model'} = $row->{'type'};
 				$newJB{'leftPlayerID'} = $row->{'leftplayerid'};
 				$newJB{'useTLS'} = $row->{'usetls'};
+				$newJB{'powerGpio'} = $row->{'powergpio'};	# Add power management
+				$newJB{'powerOn'} = $row->{'poweron'};
+				$newJB{'powerOff'} = $row->{'poweroff'};
 				$autochangers{$newJB{'id'}} = \%newJB;
 			}
 		}
@@ -158,6 +162,11 @@ sub execStop() {
 				} else {
 					printf("OK, process n°%s as been stopped properly.\n",$pid);
 					$counter++;
+					# If terminated properly, power off the autochanger if auto-poweroff is set
+					if ($process{'powerGpio'} ne "0") {
+						printf("INFO : Auto power-off for %s ...\n", $key);
+						system("echo \"0\" > /sys/class/gpio/gpio$process{'powerGpio'}/value 2>/dev/null");
+					}
 				}
 			}
 		}
@@ -247,7 +256,7 @@ sub execStart() {
 			exit 9;
 		} else {
 			open(my $pidFH, '>', $pidPivotsFile) or die "Could not open file '$pidPivotsFile' $!";
-			print $pidFH "key;pid\n";
+			print $pidFH "key;pid;powerGpio\n";
 			# Launch one by one.
 			foreach my $key (sort(keys %autochangers)) {
 				my $jukebox = $autochangers{$key};
@@ -263,6 +272,11 @@ sub execStart() {
 				$ENV{'CCCPASS'} = $jukebox{'password'};
 				$ENV{'CCCMODEL'} = $jukebox{'model'};
 				$ENV{'CCCLPID'} = $jukebox{'leftPlayerID'};
+				 # powerGpio is zero if no power management
+				$jukebox{'powerGpio'} //= 0;
+				$jukebox{'powerOn'} //= 0; 
+				$jukebox{'powerOff'} //= 0;
+				$ENV{'CCCPOWERGPIO'} = $jukebox{'powerGpio'};
 				if ((trim($jukebox{'useTLS'}) eq 'true')) {
 					$ENV{'CCCSSL'} = 1;
 					$ENV{'CCCSSLCERT'} = trim($cfgObj->param('ssl.certfile'));
@@ -270,7 +284,21 @@ sub execStart() {
 					$ENV{'CCCSSLKEY'} = trim($cfgObj->param('ssl.keyfile'));
 					$ENV{'CCCPASSPHR'} = trim($cfgObj->param('ssl.cccpivot'));
 				} 
-				printf("INFO : Starting CCCpivot script for %s - %s...",$jukebox{'id'}, $jukebox{'desc'});
+				# Power management
+				if ($jukebox{'powerGpio'} ne "0") {
+					# If the pin number is positive
+					printf("INFO : Configuring GPIO pin %s for %s - %s...\n", $jukebox{'powerGpio'}, $jukebox{'id'}, $jukebox{'desc'});
+					# Step 1 - Export
+					system("echo $jukebox{'powerGpio'} > /sys/class/gpio/export 2>/dev/null");
+					sleep 1; # Wait a little bit.
+					# Step 2 - Set direction to output
+					system("echo \"out\" > /sys/class/gpio/gpio$jukebox{'powerGpio'}/direction 2>/dev/null");
+					if ((exists $jukebox{'powerOn'}) && ($jukebox{'powerOn'} eq "1")) {
+						printf("INFO : Auto power-on for %s - %s...\n", $jukebox{'id'}, $jukebox{'desc'});
+						system("echo \"1\" > /sys/class/gpio/gpio$jukebox{'powerGpio'}/value 2>/dev/null");
+					}
+				} 
+				printf("INFO : Starting CCCpivot script for %s - %s...", $jukebox{'id'}, $jukebox{'desc'});
 				# Start new Node.js process
 				my $proc = Proc::Simple->new();
 				my $logFile = $logDir.'cccpivot_'.$key.'.log';
@@ -278,8 +306,13 @@ sub execStart() {
 				$proc->start("node", $csvPivotScript,$jukebox{'id'},"> $logFile 2>&1");
 				my $pid = $proc->pid;
 				printf(" on PID n°%s.\n",$pid);
-				# Fill the PIDs CSV-like file, each row = a Node.js process
-				print $pidFH "$key;$pid\n";
+				if ($jukebox{'powerOff'} ne "0") {
+					# Fill the PIDs CSV-like file, each row = a Node.js process + powerGpio
+					print $pidFH "$key;$pid;".$jukebox{'powerGpio'}."\n";
+				} else {
+					# Do not write the powerGpio (set to 0) if powerOff is disabled
+					print $pidFH "$key;$pid;0\n";
+				}
 			}
 			close $pidFH;
 		}
