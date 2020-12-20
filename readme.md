@@ -20,8 +20,8 @@ Files
 --- | ---
 | /opt/ccclauncher/ | Application directory
 | /opt/ccclauncher/launcher.pl | Perl script (managing Node.js processes)
-| /opt/ccclauncher/ccclauncher.cfg | Configuration (INI-like file)
-| /opt/ccclauncher/cccchangers.csv | CSV Datasource (local list of autochangers to manage)
+| /opt/ccclauncher/conf/ccclauncher.cfg | Example configuration (INI-like file)
+| /opt/ccclauncher/conf/cccchangers.csv | Example CSV Datasource (local list of autochangers to manage)
 | /opt/ccclauncher/ccclauncher.service |  systemd unit
 
 Temporary Files
@@ -35,7 +35,7 @@ jb2;2943;0
 ```
 Power management
 ----------------------------------------------------------------
-This new feature was added in the 1.1.0 version of the this script.
+This new feature was added in the 1.1.0 version of this script.
 This version add 3 more fields (columns) in the CSV file : powerGpio, powerOn & powerOff.
 By assignating a pin number (>0) you can make your Raspberry Pi power on and off the changer via a GPIO pin and a relay. This GPIO number is given to the CCCpivot Node.js process. By this way, is it possible to remotely power-on and power-off the changer directly in the application for saving power when not used.
 
