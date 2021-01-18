@@ -61,15 +61,15 @@ id;desc;enabled;serialPort;hostname;tcpPort;password;model;bauds;timeout;leftPla
 | leftPlayerID | Left player ID number (for V3000/3200/5000 - see manual), put 0 for V180M.
 | useTLS | Enable TLS (use HTTPS certificate).
 | powerGpio | GPIO number on the Raspberry Pi to drive a relay for power on/off the changer. Put 0 if not used.
-| powerOn | Put 1 to auto power on changer when starting instance. Put 0 if not used.
-| powerOff | Put 1 to auto power off changer when stopping instance. Put 0 if not used.
+| powerOn | Put 'true' to auto power on changer when starting instance. Put 'false' if not used.
+| powerOff | Put 'true' to auto power off changer when stopping instance. Put 'false' if not used.
 
 Example :
 
 > id;desc;enabled;serialPort;hostname;tcpPort;password;model;bauds;timeout;leftPlayerID;useTLS;powerGpio;powerOn;powerOff
-> ac1;Changeur 1 V3000 (Gauche);true;/dev/ttyUSB1;dellpioneer;8000;;v3000;9600;2;1;true;0;0;0
-> ac2;Changeur 2 V3000 (Droite);true;/dev/ttyUSB2;dellpioneer;8001;;v3000;9600;2;1;true;0;0;0  
-> ac3;Changeur 3 V180M;true;/dev/ttyUSB0;dellpioneer;8002;;v180m;4800;12;0;true;0;0;0
+> ac1;Changeur 1 V3000 (Gauche);true;/dev/ttyUSB1;dellpioneer;8000;;v3000;9600;2;1;true;0;false;false
+> ac2;Changeur 2 V3000 (Droite);true;/dev/ttyUSB2;dellpioneer;8001;;v3000;9600;2;1;true;0;false;false 
+> ac3;Changeur 3 V180M;true;/dev/ttyUSB0;dellpioneer;8002;;v180m;4800;12;0;true;0;false;false
 
 CCClauncher Perl script usage
 ----------------------------------------------------------------
@@ -153,6 +153,12 @@ Install basic config files:
 
 ```console
 sudo cp /opt/ccclauncher/conf/* /etc/
+```
+
+Create the default log dir:
+
+```console
+sudo mkdir /var/log/cccpivot
 ```
 
 Configure/Personalize theses files:

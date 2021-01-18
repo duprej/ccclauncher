@@ -2,12 +2,10 @@
 	CCClauncher Perl script for Linux (init/systemd and others)
 	Developped for Pioneer CAC Autochangers application CCCpivot.
 	A simple Perl script to launch & manage Node.js CCCpivot processes.
-	2018-2020 Jonathan DUPRE <http://www.jonathandupre.fr>
+	2018-2021 Jonathan DUPRE <http://www.jonathandupre.fr>
 	Licenced under GPLv3
-	1.0.0 - sept. 23 2020
-	1.1.0 - dec. 20 2020 - Add power management for Raspberry Pi
 =cut
-use constant SCRIPTVERSION => '1.1.0';
+use constant SCRIPTVERSION => '1.1.1';
 use strict;
 use warnings;
 use v5.10;
@@ -21,10 +19,7 @@ use Text::CSV qw(csv);
 
 # ------------------------ GLOBAL VARS ------------------------ 
 my $confFileName="/etc/ccclauncher.cfg";
-my $csvFileName="/etc/cccchangers.csv";
-my $csvPivotScript="/opt/cccpivot/pivot.js";
 my $pidPivotsFile="/var/run/cccpivot.pids";
-my $logDir="/var/log/";
 my $cfgObj;					#Config simple object (from .cfg file)
 my %autochangers;			#Hashtable Datasource (autochangers configuration from CSV or Postgres)
 my %processes;				#Hashtable PID file (processes launched)
@@ -52,7 +47,7 @@ sub loadCsvDs($) {
 	my $csvObj = Text::CSV->new();
 	$csvObj->sep(';');
 	# Open, parse and load CSV File in a row
-	my $ref = csv (in => $csvFileName, key => "id", headers => "auto", encoding => "UTF-8", sep_char=> ";");
+	my $ref = csv (in => $cfgObj->param('files.csv'), key => "id", headers => "auto", encoding => "UTF-8", sep_char=> ";");
 	%autochangers = %$ref;
 	# Remove those are not matching the hostname or disabled
 	foreach my $key (keys %autochangers) {
@@ -231,8 +226,8 @@ sub execStart() {
 		}
 		case "csv" {
 			print "Datasource is CSV file.\n";
-			if (!-e $csvFileName || !-f _ || !-r _ ) {
-				printf "ERROR : Datasource file %s not found or not readable.\n", $csvFileName;
+			if (!-e $cfgObj->param('files.csv') || !-f _ || !-r _ ) {
+				printf "ERROR : Datasource file %s not found or not readable.\n", $cfgObj->param('files.csv');
 				exit 2;
 			}
 			loadCsvDs($host);
@@ -274,8 +269,8 @@ sub execStart() {
 				$ENV{'CCCLPID'} = $jukebox{'leftPlayerID'};
 				 # powerGpio is zero if no power management
 				$jukebox{'powerGpio'} //= 0;
-				$jukebox{'powerOn'} //= 0; 
-				$jukebox{'powerOff'} //= 0;
+				$jukebox{'powerOn'} //= 'false'; 
+				$jukebox{'powerOff'} //= 'false';
 				$ENV{'CCCPOWERGPIO'} = $jukebox{'powerGpio'};
 				if ((trim($jukebox{'useTLS'}) eq 'true')) {
 					$ENV{'CCCSSL'} = 1;
@@ -293,7 +288,7 @@ sub execStart() {
 					sleep 1; # Wait a little bit.
 					# Step 2 - Set direction to output
 					system("echo \"out\" > /sys/class/gpio/gpio$jukebox{'powerGpio'}/direction 2>/dev/null");
-					if ((exists $jukebox{'powerOn'}) && ($jukebox{'powerOn'} eq "1")) {
+					if ((exists $jukebox{'powerOn'}) && ($jukebox{'powerOn'} eq 'true')) {
 						printf("INFO : Auto power-on for %s - %s...\n", $jukebox{'id'}, $jukebox{'desc'});
 						system("echo \"1\" > /sys/class/gpio/gpio$jukebox{'powerGpio'}/value 2>/dev/null");
 					}
@@ -301,12 +296,12 @@ sub execStart() {
 				printf("INFO : Starting CCCpivot script for %s - %s...", $jukebox{'id'}, $jukebox{'desc'});
 				# Start new Node.js process
 				my $proc = Proc::Simple->new();
-				my $logFile = $logDir.'cccpivot_'.$key.'.log';
+				my $logFile = $cfgObj->param('logs.directory').'cccpivot_'.$key.'.log';
 				$proc->redirect_output($logFile,$logFile);
-				$proc->start("node", $csvPivotScript,$jukebox{'id'},"> $logFile 2>&1");
+				$proc->start("node", $cfgObj->param('files.pivot'), $jukebox{'id'}, "> $logFile 2>&1");
 				my $pid = $proc->pid;
 				printf(" on PID n°%s.\n",$pid);
-				if ($jukebox{'powerOff'} ne "0") {
+				if ($jukebox{'powerOff'} eq 'true') {
 					# Fill the PIDs CSV-like file, each row = a Node.js process + powerGpio
 					print $pidFH "$key;$pid;".$jukebox{'powerGpio'}."\n";
 				} else {
@@ -359,14 +354,16 @@ if (!$cfgObj->read($confFileName)) {
 	printf "ERROR : Configuration file %s can't be opened by Config::Simple module.\n", $confFileName;
 	print $cfgObj->error();
 	exit 3;
-};
+}
 # Check if some crucial parameters are not missing
-foreach (qw/general.datasource logs.debug logs.directory/) {
+foreach (qw/general.datasource logs.debug logs.directory files.pivot files.pid/) {
 	if (!trim($cfgObj->param("$_"))) {
 		printf "ERROR : The value of '%s' can't be empty in the configuration file %s.\n", $_, $confFileName;
 		exit 4;
 	}
 }
+# Apply some new parameters from config file
+$pidPivotsFile=$cfgObj->param('files.pid');
 # Do some actions according to the first parameter
 switch ($ARGV[0]) {
 	case "start" {
