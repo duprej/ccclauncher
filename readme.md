@@ -43,7 +43,7 @@ CCClauncher configuration
 ----------------------------------------------------------------
 Once installed, edit the configuration file /etc/ccclauncher.cfg (INI file).
 Then edit the datasource file /etc/cccchangers.csv (CSV file).
-Each row of the CSV file is an changer entry :
+Each row of the CSV file is a changer entry :
 
 id;desc;enabled;serialPort;hostname;tcpPort;password;model;bauds;timeout;leftPlayerID;useTLS;powerGpio;powerOn;powerOff
 
@@ -64,45 +64,43 @@ id;desc;enabled;serialPort;hostname;tcpPort;password;model;bauds;timeout;leftPla
 | powerOn | Put 'true' to auto power on changer when starting instance. Put 'false' if not used.
 | powerOff | Put 'true' to auto power off changer when stopping instance. Put 'false' if not used.
 
-Example :
-
-> id;desc;enabled;serialPort;hostname;tcpPort;password;model;bauds;timeout;leftPlayerID;useTLS;powerGpio;powerOn;powerOff
-> ac1;Changeur 1 V3000 (Gauche);true;/dev/ttyUSB1;dellpioneer;8000;;v3000;9600;2;1;true;0;false;false
-> ac2;Changeur 2 V3000 (Droite);true;/dev/ttyUSB2;dellpioneer;8001;;v3000;9600;2;1;true;0;false;false 
-> ac3;Changeur 3 V180M;true;/dev/ttyUSB0;dellpioneer;8002;;v180m;4800;12;0;true;0;false;false
+See the provided [CSV configuration file](conf/cccchangers.csv) for examples.
 
 CCClauncher Perl script usage
 ----------------------------------------------------------------
 ```console
 root@dellpioneer:/opt/ccclauncher# perl launcher.pl toto
-ERROR : Parameter toto is unknown.
-This script needs a single parameter : [start|status|stop|restart|clean].
-Usage : launcher.pl [start|status|stop|restart|clean].
+ERROR : Parameter toto unknown. Check input.
+This script needs a single parameter : [start|restart|status|stop|clean|kill].
+Usage : launcher.pl [start|restart|status|stop|clean|kill].
 ```
 
 ```console
 root@dellpioneer:/opt/ccclauncher# perl launcher.pl start
-CCClauncher 1.0 is starting...
+CCClauncher 1.1.2 is starting...
 The hostname is dellpioneer.
 Datasource is CSV file.
-INFO : 2 jukeboxes loaded, 1 ignored.
+INFO : 3 autochangers loaded, 0 disabled, 0 ignored.
 INFO : No PID file.
-INFO : Starting CCCpivot script for ac1 - Changeur 1 (Gauche)... on PID n°2942.
-INFO : Starting CCCpivot script for ac2 - Changeur 2 (Droite)... on PID n°2943.
+INFO : Starting CCCpivot script for ac1 - Changeur 1 V3000 (Gauche)... on PID n°6626.
+INFO : Starting CCCpivot script for ac2 - Changeur 2 V3000 (Centre)... on PID n°6627.
+INFO : Starting CCCpivot script for ac6 - Changeur 3 V180M... on PID n°6628.
 ```
 
 ```console
 root@dellpioneer:/opt/ccclauncher# perl launcher.pl status
-CCClauncher 1.0 is displaying status...
-INFO : CCCpivot script for ac1 : OK, process is running with PID n°2942.
-INFO : CCCpivot script for ac2 : OK, process is running with PID n°2943.
+CCClauncher 1.1.2 is displaying status...
+INFO : CCCpivot script for ac1 : OK, process is running with PID n°6626.
+INFO : CCCpivot script for ac2 : OK, process is running with PID n°6627.
+INFO : CCCpivot script for ac6 : OK, process is running with PID n°6628.
 ```
 
 ```console
 root@dellpioneer:/opt/ccclauncher# perl launcher.pl stop
-CCClauncher 1.0 is stopping...
-INFO : Stopping CCCpivot script for ac1... : OK, process n°2942 as been stopped properly.
-INFO : Stopping CCCpivot script for ac2... : OK, process n°2943 as been stopped properly.
+CCClauncher 1.1.2 is stopping...
+INFO : Stopping CCCpivot script for ac1... : OK, process n°6626 has been stopped properly.
+INFO : Stopping CCCpivot script for ac2... : OK, process n°6627 has been stopped properly.
+INFO : Stopping CCCpivot script for ac6... : OK, process n°6628 has been stopped properly.
 ```
 
 Installation on Linux (in terminal)

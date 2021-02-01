@@ -5,7 +5,7 @@
 	2018-2021 Jonathan DUPRE <http://www.jonathandupre.fr>
 	Licenced under GPLv3
 =cut
-use constant SCRIPTVERSION => '1.1.1';
+use constant SCRIPTVERSION => '1.1.2';
 use strict;
 use warnings;
 use v5.10;
@@ -155,7 +155,7 @@ sub execStop() {
 				if (checkPIDExists($pid)) {
 					printf("KO, process n°%s can't be stopped. Bad user? Try kill method.\n",$pid);
 				} else {
-					printf("OK, process n°%s as been stopped properly.\n",$pid);
+					printf("OK, process n°%s has been stopped properly.\n",$pid);
 					$counter++;
 					# If terminated properly, power off the autochanger if auto-poweroff is set
 					if ($process{'powerGpio'} ne "0") {
