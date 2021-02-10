@@ -296,7 +296,7 @@ sub execStart() {
 				printf("INFO : Starting CCCpivot script for %s - %s...", $jukebox{'id'}, $jukebox{'desc'});
 				# Start new Node.js process
 				my $proc = Proc::Simple->new();
-				my $logFile = $cfgObj->param('logs.directory').'cccpivot_'.$key.'.log';
+				my $logFile = $cfgObj->param('logs.directory').$key.'.log';
 				$proc->redirect_output($logFile,$logFile);
 				$proc->start("node", $cfgObj->param('files.pivot'), $jukebox{'id'}, "> $logFile 2>&1");
 				my $pid = $proc->pid;
