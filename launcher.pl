@@ -2,10 +2,10 @@
 	CCClauncher Perl script for Linux (init/systemd and others)
 	Developped for Pioneer CAC Autochangers application CCCpivot.
 	A simple Perl script to launch & manage Node.js CCCpivot processes.
-	2018-2021 Jonathan DUPRE <http://www.jonathandupre.fr>
+	2018-2025 Jonathan DUPRE <http://www.jonathandupre.fr>
 	Licenced under GPLv3
 =cut
-use constant SCRIPTVERSION => '1.1.2';
+use constant SCRIPTVERSION => '1.1.3';
 use strict;
 use warnings;
 use v5.10;
@@ -296,7 +296,7 @@ sub execStart() {
 				printf("INFO : Starting CCCpivot script for %s - %s...", $jukebox{'id'}, $jukebox{'desc'});
 				# Start new Node.js process
 				my $proc = Proc::Simple->new();
-				my $logFile = $cfgObj->param('logs.directory').$key.'.log';
+				my $logFile = $cfgObj->param('logs.directory').'cccpivot_'.$key.'.log';
 				$proc->redirect_output($logFile,$logFile);
 				$proc->start("node", $cfgObj->param('files.pivot'), $jukebox{'id'}, "> $logFile 2>&1");
 				my $pid = $proc->pid;
