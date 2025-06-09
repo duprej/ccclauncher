@@ -1,46 +1,44 @@
 # CCClauncher
 
-Introduction
-----------------------------------------------------------------
-[CCC = CAC Control Center](https://github.com/duprej/ccc). CAC is an accronym for dedicated Pioneer CD Autochangers.
-CCClauncher module is a friendly complement that helps you to use [CCCpivot](https://github.com/duprej/cccpivot) easily.
+## Introduction
 
-It's basicaly a single Perl5 script to launch and manage all CCCpivot Node.js processes. This script reads a classical configuration file and needs a datasource.
-The datasource can be a CSV file or the CCCweb "autochanger" PostgreSQL table. The datasource describes all changers associated with their hostnames (of a computer).
+[CCC = CAC Control Center](https://github.com/duprej/ccc). CAC is an accronym for dedicated Pioneer CD Autochangers. CCClauncher module is a friendly complement that helps you to use [CCCpivot](https://github.com/duprej/cccpivot) easily.
+
+It's basicaly a single Perl5 script to launch and manage all CCCpivot Node.js processes. This script reads a classical configuration file and needs a datasource. The datasource can be a CSV file or the CCCweb "autochanger" PostgreSQL table. The datasource describes all changers associated with their hostnames (of a computer).
 
 CCClauncher automaticaly scan the given datasource, filter it with the current hostname and startup all CCCpivot instances associated with this hostname.
 
-This allowing a central configuration of all autochangers shared by many computers accross a company (with file links / NFS).
-This Perl script can start, status and stop all your CCCpivot Node.js processes like a standard Linux deamon does (like via systemd).
+This allowing a central configuration of all autochangers shared by many computers accross a company (with file links / NFS). This Perl script can start, status and stop all your CCCpivot Node.js processes like a standard Linux deamon does (like via systemd).
 
-Files
-----------------------------------------------------------------
+## Files
 
 | File | Description
---- | ---
+|--- | ---
 | /opt/ccclauncher/ | Application directory
 | /opt/ccclauncher/launcher.pl | Perl script (managing Node.js processes)
 | /opt/ccclauncher/conf/ccclauncher.cfg | Example configuration (INI-like file)
 | /opt/ccclauncher/conf/cccchangers.csv | Example CSV Datasource (local list of autochangers to manage)
 | /opt/ccclauncher/ccclauncher.service |  systemd unit
 
-Temporary Files
-----------------------------------------------------------------
+## Temporary Files
+
 Managed process list is stored in a CSV pid file : /var/run/cccpivot.pids.
+
 ```console
 root@dellpioneer:/opt/cccpivot# cat /var/run/cccpivot.pids
 key;pid;powerGpio
 jb1;2942;0
 jb2;2943;0
 ```
-Power management
-----------------------------------------------------------------
+
+## Power management
+
 This new feature was added in the 1.1.0 version of this script.
 This version add 3 more fields (columns) in the CSV file : powerGpio, powerOn & powerOff.
 By assignating a pin number (>0) you can make your Raspberry Pi power on and off the changer via a GPIO pin and a relay. This GPIO number is given to the CCCpivot Node.js process. By this way, is it possible to remotely power-on and power-off the changer directly in the application for saving power when not used.
 
-CCClauncher configuration
-----------------------------------------------------------------
+## CCClauncher configuration
+
 Once installed, edit the configuration file /etc/ccclauncher.cfg (INI file).
 Then edit the datasource file /etc/cccchangers.csv (CSV file).
 Each row of the CSV file is a changer entry :
@@ -48,7 +46,7 @@ Each row of the CSV file is a changer entry :
 id;desc;enabled;serialPort;hostname;tcpPort;password;model;bauds;timeout;leftPlayerID;useTLS;powerGpio;powerOn;powerOff
 
 | Entry | description
---- | ---
+|--- | ---
 | id | Changer ID string (few chars), must be unique! 
 | desc| Changer description (please avoid special chars).
 | enabled | true/false (false = autochanger ignored, no instance launched).
@@ -66,8 +64,8 @@ id;desc;enabled;serialPort;hostname;tcpPort;password;model;bauds;timeout;leftPla
 
 See the provided [CSV configuration file](conf/cccchangers.csv) for examples.
 
-CCClauncher Perl script usage
-----------------------------------------------------------------
+## CCClauncher Perl script usage
+
 ```console
 root@dellpioneer:/opt/ccclauncher# perl launcher.pl toto
 ERROR : Parameter toto unknown. Check input.
@@ -103,8 +101,8 @@ INFO : Stopping CCCpivot script for ac2... : OK, process n°6627 has been stoppe
 INFO : Stopping CCCpivot script for ac6... : OK, process n°6628 has been stopped properly.
 ```
 
-Installation on Linux (in terminal)
-----------------------------------------------------------------
+## Installation on Linux (terminal)
+
 All CCC modules are located in /opt directory by default.
 
 Check you have Perl & CPAN:
@@ -134,11 +132,13 @@ If you are using a Raspberry Pi or Debian/Ubuntu:
 sudo apt-get install -y libconfig-simple-perl libdbi-perl libproc-simple-perl libswitch-perl libtext-csv-perl
 sudo cpan -iT String::Util
 ```
+
 Or install all via CPAN:
 
 ```console
 sudo cpan -i Config::Simple DBI Proc::Simple String::Util Sys::Hostname Text::CSV Switch
 ```
+
 Copy the systemd unit file & enable at startup:
 
 ```console
@@ -177,6 +177,7 @@ Check if your CCCpivot processes are alive:
 ```console
 ps -ef|grep node
 ```
+
 ```console
 sudo perl /opt/ccclauncher/launcher.pl status
 ```
